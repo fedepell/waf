@@ -125,6 +125,12 @@ class utest(Task.Task):
 
 		cwd = getattr(self.generator, 'ut_cwd', '') or self.inputs[0].parent.abspath()
 
+		cmdline=getattr(self.generator,'ut_cmdline',None)
+		if cmdline:
+			curenv=self.get_test_env()
+			curenv['TGT']=self.inputs[0].abspath()
+			self.ut_exec=Utils.subst_vars(cmdline,self.get_test_env()).split(' ')
+
 		testcmd = getattr(self.generator, 'ut_cmd', False) or getattr(Options.options, 'testcmd', False)
 		if testcmd:
 			self.ut_exec = (testcmd % self.ut_exec[0]).split(' ')
