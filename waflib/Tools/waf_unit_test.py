@@ -43,10 +43,21 @@ testlock = Utils.threading.Lock()
 @after_method('apply_link', 'process_use')
 def make_test(self):
 	"""Create the unit test task. There can be only one unit test task by task generator."""
-	if not getattr(self, 'link_task', None):
+	if getattr(self, 'link_task', None):
+		tsk = self.create_task('utest', self.link_task.outputs)
+	elif ('py' in self.features) and self.source:
+		pyoutputs = []
+		# If filename is str transform to node, if ant glob already an array of Nod3
+		if isinstance(self.source, str):
+			pyoutputs = [ self.path.find_node(self.source) ]
+		else:
+			pyoutputs = self.source
+
+		self.tmp_use_sorted = []
+		tsk = self.create_task('utest', pyoutputs)
+	else:
 		return
 
-	tsk = self.create_task('utest', self.link_task.outputs)
 	if getattr(self, 'ut_str', None):
 		self.ut_run, lst = Task.compile_fun(self.ut_str, shell=getattr(self, 'ut_shell', False))
 		tsk.vars = lst + tsk.vars
