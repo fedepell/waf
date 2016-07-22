@@ -283,20 +283,28 @@ class XMLHandler(ContentHandler):
 @extension(*EXT_RCC)
 def create_rcc_task(self, node):
 	"Creates rcc and cxx tasks for ``.qrc`` files"
-	rcnode = node.change_ext('_rc.cpp')
-	self.create_task('rcc', node, rcnode)
-	cpptask = self.create_task('cxx', rcnode, rcnode.change_ext('.o'))
-	try:
-		self.compiled_tasks.append(cpptask)
-	except AttributeError:
-		self.compiled_tasks = [cpptask]
-	return cpptask
+	if 'py' in self.features:
+		rcctask = self.create_task('qrcpy', node)
+		rcctask.outputs = [node.parent.find_or_declare(self.env.pyrcc_PATTERN % node.name[:-4])]
+	else:
+                rcnode = node.change_ext('_rc.cpp')
+                self.create_task('rcc', node, rcnode)
+                cpptask = self.create_task('cxx', rcnode, rcnode.change_ext('.o'))
+                try:
+                        self.compiled_tasks.append(cpptask)
+                except AttributeError:
+                        self.compiled_tasks = [cpptask]
+                return cpptask
 
 @extension(*EXT_UI)
 def create_uic_task(self, node):
 	"Create uic tasks for user interface ``.ui`` definition files"
-	uictask = self.create_task('ui5', node)
-	uictask.outputs = [node.parent.find_or_declare(self.env.ui_PATTERN % node.name[:-3])]
+	if 'py' in self.features:
+		uictask = self.create_task('ui5py', node)
+		uictask.outputs = [node.parent.find_or_declare(self.env.pyui_PATTERN % node.name[:-3])]
+	else:
+                uictask = self.create_task('ui5', node)
+                uictask.outputs = [node.parent.find_or_declare(self.env.ui_PATTERN % node.name[:-3])]
 
 @extension('.ts')
 def add_lang(self, node):
@@ -432,6 +440,22 @@ class ui5(Task.Task):
 	color   = 'BLUE'
 	run_str = '${QT_UIC} ${SRC} -o ${TGT}'
 	ext_out = ['.h']
+
+class ui5py(Task.Task):
+	"""
+	Processes ``.ui`` files for python
+	"""
+	color   = 'BLUE'
+	run_str = '${QT_PYUIC} ${SRC} -o ${TGT}'
+	ext_out = ['.py']
+
+class qrcpy(Task.Task):
+	"""
+	Processes ``.qrc`` files for python
+	"""
+	color   = 'BLUE'
+	run_str = '${QT_PYRCC} ${SRC} -o ${TGT}'
+	ext_out = ['.py']
 
 class ts2qm(Task.Task):
 	"""
@@ -610,9 +634,20 @@ def find_qt5_binaries(self):
 	find_bin(['lrelease-qt5', 'lrelease'], 'QT_LRELEASE')
 	find_bin(['lupdate-qt5', 'lupdate'], 'QT_LUPDATE')
 
+        # We will do those just if also py is loaded, otherwise not
+	find_bin(['pyuic5', 'uic'], 'QT_PYUIC')
+	if not env.QT_PYUIC:
+		self.fatal('cannot find the uic compiler for python for qt5')
+
+	find_bin(['pyrcc5', 'uic'], 'QT_PYRCC')
+	if not env.QT_PYUIC:
+		self.fatal('cannot find the rcc compiler for python for qt5')
+
 	env.UIC_ST = '%s -o %s'
 	env.MOC_ST = '-o'
 	env.ui_PATTERN = 'ui_%s.h'
+	env.pyui_PATTERN = '%s.py'
+	env.pyrcc_PATTERN = '%s.py'
 	env.QT_LRELEASE_FLAGS = ['-silent']
 	env.MOCCPPPATH_ST = '-I%s'
 	env.MOCDEFINES_ST = '-D%s'
