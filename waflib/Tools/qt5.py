@@ -508,7 +508,7 @@ def configure(self):
 		if flag:
 			msg += 'with %s' % flag
 		try:
-			self.check(features='qt5 cxx', use=uses, uselib_store='qt5', cxxflags=flag, fragment=frag, msg=msg)
+			self.check(features='qt5 cxx', use=uses, uselib_store='qt5', cxxflags=flag, fragment=frag, msg=msg, cppcheck_skip=True)
 		except self.errors.ConfigurationError:
 			pass
 		else:
