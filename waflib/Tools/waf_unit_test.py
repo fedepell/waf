@@ -98,6 +98,9 @@ def make_test(self):
 		else:
 			add_path('LD_LIBRARY_PATH')
 
+	if getattr(self, 'ut_env_append', None):
+		self.ut_env.update(getattr(self, 'ut_env_append', None))
+
 @taskgen_method
 def add_test_results(self, tup):
 	"""Override and return tup[1] to interrupt the build immediately if a test does not run"""
