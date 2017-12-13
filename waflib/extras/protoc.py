@@ -23,6 +23,10 @@ Example for C++:
                 includes = '. proto',
                 target   = 'executable')
 
+You can install the generated headers (ie. if you are building a shared library)
+by assigning the destination directory to install_includes_path, ie:
+                install_include_path = '${PREFIX}/includes'
+
 Example for Python:
 
     def configure(conf):
@@ -142,6 +146,10 @@ def process_protoc(self, node):
 		out_nodes.append(cpp_node)
 		out_nodes.append(hpp_node)
 		protoc_flags.append('--cpp_out=%s' % node.parent.get_bld().bldpath())
+                ipath = getattr(self, 'install_includes_path', None)
+                if ipath:
+                        self.install_includes_task = self.add_install_files(
+                                install_to=ipath, install_from=hpp_node)
 
 	if 'py' in self.features:
 		py_node = node.change_ext('_pb2.py')

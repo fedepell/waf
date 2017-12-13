@@ -17,7 +17,8 @@ def build(bld):
 		features = 'cxx cxxshlib',
 		source   = ['inc/message_inc.proto','inc/message.proto'],
 		target   = 'somelib',
-		includes = ['inc'])
+		includes = ['inc'],
+		install_includes_path = '${PREFIX}/include')
 
 
 	bld(
