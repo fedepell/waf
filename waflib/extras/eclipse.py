@@ -178,7 +178,7 @@ class eclipse(Build.BuildContext):
 			# Otherwise for Java/Python an external builder tool is created that will call waf build
 			self.add(doc, buildCommand, 'name', 'org.eclipse.ui.externaltools.ExternalToolBuilder')
 			dictionaries = {
-					'LaunchConfigHandle': '<project>/' + extbuilder_dir + '/'+extbuilder_name,
+					'LaunchConfigHandle': '<project>/%s/%s'%(extbuilder_dir, extbuilder_name),
 					}
 			# The definition is in a separate directory XML file
 			try:
@@ -198,7 +198,7 @@ class eclipse(Build.BuildContext):
 			self.add(doc, launchConfiguration, 'stringAttribute', {'key': 'org.eclipse.ui.externaltools.ATTR_WORKING_DIRECTORY', 'value': '${project_loc}'})
 			builder.appendChild(launchConfiguration)
 			# And write the XML to the file references before
-			self.srcnode.make_node(extbuilder_dir + os.path.sep + extbuilder_name).write(builder.toprettyxml())
+			self.srcnode.make_node('%s%s%s'%(extbuilder_dir, os.path.sep, extbuilder_name)).write(builder.toprettyxml())
 
 		for k, v in dictionaries.items():
 			self.addDictionary(doc, arguments, k, v)
